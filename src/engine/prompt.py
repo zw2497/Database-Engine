@@ -35,26 +35,39 @@ if __name__ == "__main__":
     import db
     import parse_expr
     import parse_sql
-    reload(interpretor)
-    reload(optimizer)
-    reload(ops)
-    reload(db)
-    reload(parse_expr)
-    reload(parse_sql)
     from interpretor import PullBasedInterpretor, PushBasedInterpretor
     from optimizer import Optimizer
-    from ops import Print, Project, Scan
+    from ops import Print
     from db import Database
     from parse_expr import parse as _parse_expr
     from parse_sql import parse as _parse_sql
 
-    db = Database()
+
+    _db = Database()
 
     if cmd == "q":
       return
 
+    elif cmd == "":
+      pass
+
     elif cmd.startswith("help"):
       print(HELPTEXT)
+
+    elif cmd.lower() == "reload":
+      reload(parse_expr)
+      reload(db)
+      reload(ops)
+      reload(parse_sql)
+      reload(optimizer)
+      reload(interpretor)
+      from parse_expr import parse as _parse_expr
+      from db import Database
+      from ops import Print
+      from parse_sql import parse as _parse_sql
+      from optimizer import Optimizer
+      from interpretor import PullBasedInterpretor, PushBasedInterpretor
+
 
     elif cmd.upper().startswith("TRACE"):
       traceback.print_exc()
@@ -76,14 +89,14 @@ if __name__ == "__main__":
         print("ERROR:", err)
 
     elif cmd.upper().startswith("SHOW TABLES"):
-      for tablename in db.tablenames:
+      for tablename in _db.tablenames:
         print tablename
       
     elif cmd.upper().startswith("SHOW "):
       tname = cmd[len("SHOW "):].strip()
-      if tname in db:
+      if tname in _db:
         print "Schema for %s" % tname
-        t = db[tname]
+        t = _db[tname]
         for field in t.fields:
           if t.rows:
             typ = type(t.rows[0][field])
@@ -96,18 +109,18 @@ if __name__ == "__main__":
     else:
       try:
         plan = _parse_sql(cmd)
-        optimizer = Optimizer(db)
-        interpretor = PullBasedInterpretor(db)
-        #interpretor = PushBasedInterpretor(db)
+        opt = Optimizer(_db)
+        interp = PullBasedInterpretor(_db)
+        #interp = PushBasedInterpretor(_db)
 
-        plan = optimizer(plan)
+        plan = opt(plan)
         print(plan)
         plan = Print(plan)
-        interpretor(plan)
+        interp(plan)
       except Exception as err:
         print("ERROR:", err)
 
-    del db
+    del _db
     service_inputs()
 
 

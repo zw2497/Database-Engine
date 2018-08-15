@@ -86,7 +86,7 @@ class Op(object):
   def consume(self, ctx):
     raise Exception("Op.consume not implemented")
 
-  def compile(self):
+  def compile_to_code(self):
     """
     @return a function that executes the compiled query.  The function takes as input a Database object
 
@@ -102,7 +102,10 @@ class Op(object):
     ctx.code.indent_all_lines(1)
     ctx.code.lines.insert(0, [0, "def f(db):"])
     codeblock = ctx.code.compile()
-    print codeblock
+    return codeblock
+
+  def compile(self):
+    codeblock = self.compile_to_code()
     exec(codeblock)
     return f
 
@@ -336,12 +339,13 @@ if __name__ == "__main__":
 
 
   # compile the query into a python function
-  func = q.compile()
+  code = q.compile_to_code()
+  print code
 
-  assert list(q) == list(func(db))
+  assert list(q) == list(q.compile()(db))
 
 
   # Compare the query execution costs
-  print "Interpreted\t", timeit.timeit(lambda: list(q), number=100)
-  print "   Compiled\t", timeit.timeit(lambda: list(func(db)), number=100)
+  print "Interpreted\t", timeit.timeit(lambda: list(q), number=10)
+  print "   Compiled\t", timeit.timeit(lambda: list(q.compile()(db)), number=10)
 

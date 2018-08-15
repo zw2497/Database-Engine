@@ -3,6 +3,7 @@ import math
 import numpy as np
 import inspect
 import pandas
+import numbers
 
 try:
   # hack to get this code to work on Instabase
@@ -439,8 +440,10 @@ class Limit(UnaryOp):
       self.limit = Literal(self.limit)
 
   def __iter__(self):
+    _offset = int(self.offset(None))
+    _limit = int(self.limit(None))
     for i, row in enumerate(self.c):
-      if i >= self.limit(): 
+      if i >= _limit:
         break
       yield row
 
@@ -564,9 +567,9 @@ class Expr(ExprBase):
     self.r = r
 
   def to_str(self):
-    if self.r:
+    if self.r is not None:
       return "%s %s %s" % (self.l, self.op, self.r)
-    return "%s %s" % (self.op, self.r)
+    return "%s %s" % (self.op, self.l)
 
   def to_python(self):
     op = self.op 

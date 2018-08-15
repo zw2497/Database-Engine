@@ -312,6 +312,9 @@ class Visitor(NodeVisitor):
   def visit_binaryop(self, node, children):
     return node.text
 
+  def visit_unaryop(self, node, children):
+    return node.text
+
   def visit_binaryop_no_andor(self, node, children):
     return node.text
 

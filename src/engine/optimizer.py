@@ -123,9 +123,9 @@ class SelingerOpt(object):
     self.pred_index = self.build_predicate_index(preds)
     self.plans_tested = 0
 
-    # This is a slow, top-down example that uses recursion
+    # This is an exhaustive algorithm that uses recursion
     # You will implement a faster bottom-up algorithm based on Selinger
-    plan = self.best_plan_topdown(sources)
+    plan = self.best_plan_exhaustive(sources)
     
     # XXX: Uncomment the following once you have implemented best_plan()
     # plan = self.best_plan(sources)
@@ -191,6 +191,10 @@ class SelingerOpt(object):
     # make a copy of sources 
     sources = list(sources)
 
+    # No need for optimizer if only one table in the FROM clause
+    if len(sources) == 1:
+      return sources[0]
+
     best_plan = self.best_initial_join(sources)
     sources.remove(best_plan.l)
     sources.remove(best_plan.r)
@@ -236,15 +240,15 @@ class SelingerOpt(object):
 
     return best_plan
 
-  def best_plan_topdown(self, sources):
+  def best_plan_exhaustive(self, sources):
     """
     @sources list of tables that we will build a join plan for
     @return A left-deep ThetaJoin plan
 
-    This is an example implementation of a topdown plan optimizer that
-    uses memoization.  It is slower than the bottom-up Selinnger approach
-    that you will implement because it ends up checking redundant candidate
-    plans.  
+    This is an example implementation of a exhaustive plan optimizer.
+    It is slower than the bottom-up Selinnger approach
+    that you will implement because it ends up checking the same candidate
+    plans multiple times.  
 
     This code is provided to give you hints about how to use the class 
     methods and implement the bottom-up approach
@@ -255,7 +259,7 @@ class SelingerOpt(object):
     best_cost = float("inf")
     for i, table in enumerate(sources):
       rest = sources[:i] + sources[i+1:]
-      rest_plan = self.best_plan_topdown(rest)
+      rest_plan = self.best_plan_exhaustive(rest)
       if rest_plan is None:
         continue
 
