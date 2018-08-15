@@ -25,47 +25,67 @@ class Stats(object):
     return [0, 1]
 
 
-class Table:
-  def __init__(self, fields, rows):
+class Table(object):
+  def __init__(self, fields):
     self.fields = fields
-    self.rows = rows
 
   def type(self, field):
-    if isinstance(self.rows[0][field], numbers.Number):
-      return "num"
+    """
+    Instead of maintaining a schema, just check the first row of the table
+    """
+    for row in self.rows:
+      if isinstance(row[field], numbers.Number):
+        return "num"
+      break
     return "str"
-
-  def col_values(self, field):
-    return [row[field] for row in self.rows]
-
-  @property
-  def stats(self):
-    return Stats(self)
 
   @staticmethod
   def from_dataframe(df):
     fields = list(df.columns)
     rows = df.T.to_dict().values()
-    return Table(fields, rows)
+    return InMemoryTable(fields, rows)
 
   @staticmethod
   def from_rows(rows):
     if not rows:
-      return Table([], rows)
-    return Table(rows[0].keys(), rows)
+      return InMemoryTable([], rows)
+    return InMemoryTable(rows[0].keys(), rows)
+
+  @property
+  def stats(self):
+    return Stats(self)
+
+  def col_values(self, field):
+    return [row[field] for row in self]
+
+  def __iter__(self):
+    yield
+
+
+class InMemoryTable(Table):
+  """
+  Table that contains its data all in memory
+  """
+  def __init__(self, fields, rows):
+    super(InMemoryTable, self).__init__(fields)
+    self.rows = rows
 
   def __iter__(self):
     return iter(self.rows)
 
 class Database(object):
   """
-  Looks for and registers all csv files in the current directory
+  Manages all tables registered in the database
   """
   def __init__(self):
     self.registry = {}
     self.setup()
 
   def setup(self):
+    """
+    Walks all CSV files in the current directory and registers
+    them in the database
+    """
     for root, dirs, files in os.walk("."):
       for fname in files:
         if fname.lower().endswith(".csv"):
@@ -94,6 +114,3 @@ class Database(object):
 
   def __getitem__(self, tablename):
     return self.registry.get(tablename, None)
-
-  def statistics(self, tablename):
-    pass

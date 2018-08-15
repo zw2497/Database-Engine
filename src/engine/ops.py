@@ -329,43 +329,37 @@ class HashJoin(Join):
     return hash(val)
 
   def __iter__(self):
+    """
+    Build an index on the inner (right) source, then probe the index
+    for each row in the outer (left) source.  
+    
+    Yields each join result
+    """
     # Hash join is equality on left_attr and right_attr    
-    join_attrs = [str(x) for x in self.join_attrs]
-    left_attr = join_attrs[0]
-    right_attr = join_attrs[1]
+    left_attr = str(join_attrs[0])
+    right_attr = str(join_attrs[1])
 
-    index = self.build_hash_index(self.r, right_attr)
+    # XXX: implement code to build the hash index
 
-    checked_key_override = False
-    for lrow in self.l:
-      # probe the hash index
-      lval = lrow[left_attr]
-      key = self.hash_func(lval)
-      matches = index[key]
-
-      # generate outputs for all matching tuples
-      for rrow in matches:
-        newtup = dict(lrow)
-        if not checked_key_override:
-          for key, val in rrow.iteritems():
-              if key in newtup:
-                print "WARN: join relations share attrs that will be overwritten: %s" % key
-          checked_key_override = True
-        newtup.update(rrow)
-        yield newtup
+    # go through the outer source and probe the hashindex
+    # make sure to use hash function to get the appropriate hash key
+    # XXX: implement the join code here.  It should construct each 
+    #      join result and "yield" it
 
   def build_hash_index(self, child_iter, attr):
     """
+    @child_iter tuple iterator to construct an index over
     @attr attribute name to build index on
 
     Loops through a tuple iterator and creates an index based on
     the attr value
     """
+    # defaultdict will initialize a hash entry to a new list if
+    # the entry is not found
     index = defaultdict(list)
     for row in child_iter:
-      val = row[attr]
-      key = self.hash_func(val)
-      index[key].append(row)
+      # XXX: replace this code to populate the index
+      pass
     return index
     
   def to_str(self):
