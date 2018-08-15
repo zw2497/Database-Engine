@@ -12,7 +12,6 @@ List of commands
 [query]                           runs query string
 PARSE EXPR [expression string]    parse and print AST for expression
 PARSE Q [query string]            parse and print AST for query 
-LOOPIFY [query string]            turn a select-project-join query into code
 TRACE                             print stack trace of last error
 SHOW TABLES                       print list of database tables
 SHOW <tablename>                  print schema for <tablename>
@@ -30,21 +29,18 @@ if __name__ == "__main__":
   def service_inputs():
     cmd = raw_input("> ").strip()
 
-    import loopify
     import interpretor
     import optimizer
     import ops
     import db
     import parse_expr
     import parse_sql
-    reload(loopify)
     reload(interpretor)
     reload(optimizer)
     reload(ops)
     reload(db)
     reload(parse_expr)
     reload(parse_sql)
-    from loopify import loopify as _loopify
     from interpretor import PullBasedInterpretor, PushBasedInterpretor
     from optimizer import Optimizer
     from ops import Print, Project, Scan
@@ -76,14 +72,6 @@ if __name__ == "__main__":
       try:
         ast = _parse_sql(q)
         print(ast)
-      except Exception as err:
-        print("ERROR:", err)
-
-    elif cmd.upper().startswith("LOOPIFY"):
-      q = cmd[len("LOOPIFY"):].strip()
-      try:
-        ast = parse_sql(q)
-        print(_loopify(ast))
       except Exception as err:
         print("ERROR:", err)
 

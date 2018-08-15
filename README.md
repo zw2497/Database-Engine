@@ -27,7 +27,6 @@ Below is an example session using the prompt.  The user input is the text after 
 	[query]                           runs query string
 	PARSE EXPR [expression string]    parse and print AST for expression
 	PARSE Q [query string]            parse and print AST for query
-	LOOPIFY [query string]            turn a select-project-join query into code
 	TRACE                             print stack trace of last error
 	SHOW TABLES                       print list of database tables
 	SHOW <tablename>                  print schema for <tablename>
