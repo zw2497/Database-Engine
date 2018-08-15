@@ -1,9 +1,10 @@
 import csv
 import math
-import numpy as np
 import inspect
 import pandas
 import numbers
+import numpy as np
+from collections import defaultdict
 
 try:
   # hack to get this code to work on Instabase
@@ -312,7 +313,7 @@ class HashJoin(Join):
                 attribute values from the left and right tables are
                 the same.  Suppose:
                 
-                  l = iowa, r = iowa and join_attrs = ["STORE", "STORE"]
+                  l = iowa, r = iowa, join_attrs = ["STORE", "STORE"]
 
                 then we return all pairs of (l, r) where 
                 l.STORE = r.STORE
@@ -320,23 +321,52 @@ class HashJoin(Join):
     super(HashJoin, self).__init__(l, r)
     self.join_attrs = join_attrs
 
+  def hash_func(self, val):
+    """
+    This function explicitly represents the hash key function for
+    the hash table
+    """
+    return hash(val)
+
   def __iter__(self):
     # Hash join is equality on left_attr and right_attr    
     join_attrs = [str(x) for x in self.join_attrs]
     left_attr = join_attrs[0]
     right_attr = join_attrs[1]
 
-    index = defaultdict(list)
-    for rrow in self.r:
-      index[rrow[right_attr]].append(rrow)
+    index = self.build_hash_index(self.r, right_attr)
 
+    checked_key_override = False
     for lrow in self.l:
-      for rrow in lrow[left_attr]:
-        newtup = dict()
-        newtup.update(lrow)
+      # probe the hash index
+      lval = lrow[left_attr]
+      key = self.hash_func(lval)
+      matches = index[key]
+
+      # generate outputs for all matching tuples
+      for rrow in matches:
+        newtup = dict(lrow)
+        if not checked_key_override:
+          for key, val in rrow.iteritems():
+              if key in newtup:
+                print "WARN: join relations share attrs that will be overwritten: %s" % key
+          checked_key_override = True
         newtup.update(rrow)
         yield newtup
 
+  def build_hash_index(self, child_iter, attr):
+    """
+    @attr attribute name to build index on
+
+    Loops through a tuple iterator and creates an index based on
+    the attr value
+    """
+    index = defaultdict(list)
+    for row in child_iter:
+      val = row[attr]
+      key = self.hash_func(val)
+      index[key].append(row)
+    return index
     
   def to_str(self):
     return "HASHJOIN(ON %s)" % (str(self.l), str(self.r), str(self.join_attrs))
@@ -728,3 +758,8 @@ class Star(ExprBase):
     raise Exception("I don't support turning SELECT * into python code")
 
 
+if __name__ == "__main__":
+  import db
+  db = db.Database()
+  for row in HashJoin(db['data'], db['data'], ["a", "c"]):
+    print row
