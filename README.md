@@ -4,7 +4,7 @@ This is a simple Python-based analytical database for instructional purposes.  S
 
 Installation
 
-    git clone git@github.com:w4111/databass.git
+    git clone git@github.com:w4111/databass-public.git
 
     # turn on virtualenv
 
