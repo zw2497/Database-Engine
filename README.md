@@ -24,30 +24,28 @@ Below is an example session using the prompt.  The user input is the text after 
 
 	List of commands
 
-	[query]                           runs query string
-	PARSE EXPR [expression string]    parse and print AST for expression
-	PARSE Q [query string]            parse and print AST for query
-	TRACE                             print stack trace of last error
-	SHOW TABLES                       print list of database tables
-	SHOW <tablename>                  print schema for <tablename>
+    [query]                           runs query string
+    PARSE [query or expression str]   parse and print AST for expression or query
+    TRACE                             print stack trace of last error
+    SHOW TABLES                       print list of database tables
+    SHOW <tablename>                  print schema for <tablename>
 
 
 You can see how simple expressions are parsed:
 
-	> parse expr 1+2*a
+	> parse 1+2*a
 	1.0 + 2.0 * a
 
-	> parse expr (1+2*a) / 10
+	> parse (1+2*a) / 10
 	(1.0 + 2.0 * a) / 10.0
 
 Or the parsed query plan of a SQL query
 
-	> parse q SELECT 1+2*a AS a FROM data WHERE a > 1
+	> parse SELECT 1+2*a AS a FROM data WHERE a > 1
 	Project(1.0 + 2.0 * a AS a)
 	  WHERE(a > 1.0)
 		FROM()
 		  Scan(data AS data)
-
 
 When the program starts, DataBass automatically crawls all subdirectories and loads any CSV files that it finds into memory.  In our example, [src/engine/data](../src/engine/data) contains two CSV files: [data.csv](../src/engine/data/data.csv) and [iowa-liquor-sample.csv](../src/engine/data/iowa-liquor-sample.csv).
 
