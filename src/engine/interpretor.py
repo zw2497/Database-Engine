@@ -20,7 +20,7 @@ class PullBasedInterpretor(object):
       scanop.set_db(self.db)
 
     for row in op:
-      pass
+      yield row
 
 
 

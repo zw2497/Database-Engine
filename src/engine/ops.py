@@ -248,7 +248,8 @@ class SubQuerySource(Source):
 
 class Scan(Source):
   """
-  Each tuple is a python dictionary
+  A scan operator over a table in the Database.
+  In order to run, it must have a reference to a Database object
   """
 
   def __init__(self, tablename, alias=None):
@@ -262,6 +263,7 @@ class Scan(Source):
   def __iter__(self):
     if self.db == None:
       raise Exception("Scan: Make sure to call Scan.set_db before executing iterator")
+
     for row in self.db[self.tablename]:
       yield row
   

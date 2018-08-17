@@ -10,8 +10,7 @@ HELPTEXT = """
 List of commands
 
 [query]                           runs query string
-PARSE EXPR [expression string]    parse and print AST for expression
-PARSE Q [query string]            parse and print AST for query 
+PARSE [query or expression str]   parse and print AST for expression or query
 TRACE                             print stack trace of last error
 SHOW TABLES                       print list of database tables
 SHOW <tablename>                  print schema for <tablename>
@@ -72,21 +71,20 @@ if __name__ == "__main__":
     elif cmd.upper().startswith("TRACE"):
       traceback.print_exc()
 
-    elif cmd.upper().startswith("PARSE EXPR"):
-      e = cmd[len("PARSE EXPR"):]
+    elif cmd.upper().startswith("PARSE"):
+      q = cmd[len("PARSE"):]
+      ast = None
       try:
-        ast = _parse_expr(e)
-        print(ast)
-      except Exception as err:
-        print("ERROR:", err)
+        ast = _parse_expr(q)
+      except Exception as err_expr:
+        try:
+          ast = _parse_sql(q)
+        except Exception as err:
+          print("ERROR:", err)
 
-    elif cmd.upper().startswith("PARSE Q"):
-      q = cmd[len("PARSE Q"):]
-      try:
-        ast = _parse_sql(q)
+      if ast:
         print(ast)
-      except Exception as err:
-        print("ERROR:", err)
+
 
     elif cmd.upper().startswith("SHOW TABLES"):
       for tablename in _db.tablenames:
@@ -115,8 +113,8 @@ if __name__ == "__main__":
 
         plan = opt(plan)
         print(plan)
-        plan = Print(plan)
-        interp(plan)
+        for row in interp(plan):
+          print row
       except Exception as err:
         print("ERROR:", err)
 
