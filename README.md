@@ -11,7 +11,7 @@ Installation
     pip install click pandas numpy parsimonious readline
 
 
-If you are a Columbia student and have a clic account, you can install it there.  That way you can minimize computer environment issues:
+If you are a Columbia student and [have a clic account](https://www.cs.columbia.edu/~crf/accounts/cs.html), you can install and edit databass on clic.  That way you can minimize computer environment issues:
 
     # ssh into clic
     ssh <your user name>@clic.cs.columbia.edu
