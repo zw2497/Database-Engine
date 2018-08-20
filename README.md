@@ -10,10 +10,26 @@ Installation
 
     pip install click pandas numpy parsimonious readline
 
+
+If you are a Columbia student and have a clic account, you can install it there.  That way you can minimize computer environment issues:
+
+    # ssh into clic
+    ssh <your user name>@clic.cs.columbia.edu
+
+    # create virtual environment and enable it
+    mkvirtualenv test
+    workon test
+
+    git clone git@github.com:w4111/databass-public.git
+    pip install click pandas numpy parsimonious readline
+
+
 ### Take DataBass for a Spin.  
 
-Go into the [src/engine/](../src/engine) directory and run `prompt.py`.  This provides a simple database console to explore the features of the engine.  
+Do the following to run the DataBass console:
 
+    cd databass-public/src/engine
+    python prompt.py
 
 Below is an example session using the prompt.  The user input is the text after the `> ` character.
 
