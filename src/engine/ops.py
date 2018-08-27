@@ -466,7 +466,6 @@ class Limit(UnaryOp):
       self.limit = Literal(self.limit)
 
   def __iter__(self):
-    _offset = int(self.offset(None))
     _limit = int(self.limit(None))
     for i, row in enumerate(self.c):
       if i >= _limit:
