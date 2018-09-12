@@ -30,9 +30,10 @@ grammar = Grammar(
 
     from_clause    = FROM join_source
     join_source    = ws single_source (ws "," ws single_source)*
-    single_source  = source_table / source_subq
+    single_source  = source_func / source_table / source_subq 
     source_table   = table_name (AS wsp name)?
-    source_subq    = "(" ws query ws ")" (AS ws name)?
+    source_subq    = "(" ws query ws ")" (AS wsp name)?
+    source_func    = function (AS wsp name)?
 
     where_clause   = WHERE wsp expr (AND wsp expr)*
 
@@ -44,6 +45,8 @@ grammar = Grammar(
     orderby        = ORDER BY ordering_term (ws "," ordering_term)*
     ordering_term  = ws expr (ASC/DESC)?
 
+    # TODO: edit this grammar rule to support the OFFSET syntax
+    #       Note that the offset is allowed to be an expression.
     limit          = LIMIT wsp expr
 
     col_ref        = (table_name ".")? column_name
@@ -70,87 +73,87 @@ grammar = Grammar(
     fname    = ~"\w[\w\d]*"i
     boolean  = "true" / "false"
     compound_op = "UNION" / "union"
-    binaryop = "+" / "-" / "*" / "/" / "=" / "<>" /
-               "<=" / ">" / "<" / ">" / "and" / "AND" / "or" / "OR"
-    binaryop_no_andor = "+" / "-" / "*" / "/" / "=" / "<>" /
-               "<=" / ">" / "<" / ">" 
-    unaryop  = "+" / "-" / "not"
+    binaryop = "+" / "-" / "*" / "/" / "==" / "=" / "<>" / "!=" / 
+               "<=" / ">" / "<" / ">" / "and" / "AND" / "or" / "OR" / "like" / "LIKE"
+    binaryop_no_andor = "+" / "-" / "*" / "/" / "==" / "=" / "<>" / "!=" / 
+               "<=" / ">" / "<" / ">" / "like" / "LIKE"
+    unaryop  = "+" / "-" / "not" / "NOT"
     ws       = ~"\s*"i
     wsp      = ~"\s+"i
 
-    name       = ~"[a-zA-Z]\w*"i
+    name       = ~"[a-zA-Z]\w*"i /  ~"`[a-zA-Z][\w\.\-\_\:\*]*`"i / ~"\[[a-zA-Z][\w\.\-\_\:\*]*\]"i 
     table_name = name
     column_name = name
 
-    ADD = wsp "ADD"
-    ALL = wsp "ALL"
-    ALTER = wsp "ALTER"
+    ADD = wsp ("ADD" / "and")
+    ALL = wsp ("ALL" / "all")
+    ALTER = wsp ("ALTER" / "alter")
     AND = wsp ("AND" / "and")
     AS = wsp ("AS" / "as")
-    ASC = wsp "ASC"
+    ASC = wsp ("ASC" / "asc")
     BETWEEN = wsp ("BETWEEN" / "between")
-    BY = wsp "BY"
-    CAST = wsp "CAST"
-    COLUMN = wsp "COLUMN"
-    DESC = wsp "DESC"
-    DISTINCT = wsp "DISTINCT"
+    BY = wsp ("BY" / "by")
+    CAST = wsp ("CAST" / "cast")
+    COLUMN = wsp ("COLUMN" / "column")
+    DESC = wsp ("DESC" / "distinct")
+    DISTINCT = wsp ("DISTINCT" / "distinct")
     E = "E"
-    ESCAPE = wsp "ESCAPE"
-    EXCEPT = wsp "EXCEPT"
-    EXISTS = wsp "EXISTS"
-    EXPLAIN = ws "EXPLAIN"
-    EVENT = ws "EVENT"
-    FORALL = wsp "FORALL"
-    FROM = wsp "FROM"
-    GLOB = wsp "GLOB"
-    GROUP = wsp "GROUP"
-    HAVING = wsp "HAVING"
-    IN = wsp "IN"
-    INNER = wsp "INNER"
-    INSERT = ws "INSERT"
-    INTERSECT = wsp "INTERSECT"
-    INTO = wsp "INTO"
-    IS = wsp "IS"
-    ISNULL = wsp "ISNULL"
-    JOIN = wsp "JOIN"
-    KEY = wsp "KEY"
-    LEFT = wsp "LEFT"
-    LIKE = wsp "LIKE"
-    LIMIT = wsp "LIMIT"
-    MATCH = wsp "MATCH"
-    NO = wsp "NO"
-    NOT = wsp "NOT"
-    NOTNULL = wsp "NOTNULL"
-    NULL = wsp "NULL"
-    OF = wsp "OF"
-    OFFSET = wsp "OFFSET"
-    ON = wsp "ON"
-    OR = wsp "OR"
-    ORDER = wsp "ORDER"
-    OUTER = wsp "OUTER"
-    PRIMARY = wsp "PRIMARY"
-    QUERY = wsp "QUERY"
-    RAISE = wsp "RAISE"
-    REFERENCES = wsp "REFERENCES"
-    REGEXP = wsp "REGEXP"
-    RENAME = wsp "RENAME"
-    REPLACE = ws "REPLACE"
-    RETURN = wsp "RETURN"
-    ROW = wsp "ROW"
-    SAVEPOINT = wsp "SAVEPOINT"
-    SELECT = ws "SELECT"
-    SET = wsp "SET"
-    TABLE = wsp "TABLE"
-    TEMP = wsp "TEMP"
-    TEMPORARY = wsp "TEMPORARY"
-    THEN = wsp "THEN"
-    TO = wsp "TO"
-    UNION = wsp "UNION"
-    USING = wsp "USING"
-    VALUES = wsp "VALUES"
-    VIRTUAL = wsp "VIRTUAL"
-    WITH = wsp "WITH"
-    WHERE = wsp "WHERE"
+	ESCAPE  = wsp ("ESCAPE" / "escape")
+	EXCEPT  = wsp ("EXCEPT" / "except")
+	EXISTS  = wsp ("EXISTS" / "exists")
+	EXPLAIN  = ws ("EXPLAIN" / "explain")
+	EVENT  = ws ("EVENT" / "event")
+	FORALL  = wsp ("FORALL" / "forall")
+	FROM  = wsp ("FROM" / "from")
+	GLOB  = wsp ("GLOB" / "glob")
+	GROUP  = wsp ("GROUP" / "group")
+	HAVING  = wsp ("HAVING" / "having")
+	IN  = wsp ("IN" / "in")
+	INNER  = wsp ("INNER" / "inner")
+	INSERT  = ws ("INSERT" / "insert")
+	INTERSECT  = wsp ("INTERSECT" / "intersect")
+	INTO  = wsp ("INTO" / "into")
+	IS  = wsp ("IS" / "is")
+	ISNULL  = wsp ("ISNULL" / "isnull")
+	JOIN  = wsp ("JOIN" / "join")
+	KEY  = wsp ("KEY" / "key")
+	LEFT  = wsp ("LEFT" / "left")
+	LIKE  = wsp ("LIKE" / "like")
+	LIMIT  = wsp ("LIMIT" / "limit")
+	MATCH  = wsp ("MATCH" / "match")
+	NO  = wsp ("NO" / "no")
+	NOT  = wsp ("NOT" / "not")
+	NOTNULL  = wsp ("NOTNULL" / "notnull")
+	NULL  = wsp ("NULL" / "null")
+	OF  = wsp ("OF" / "of")
+	OFFSET  = wsp ("OFFSET" / "offset")
+	ON  = wsp ("ON" / "on")
+	OR  = wsp ("OR" / "or")
+	ORDER  = wsp ("ORDER" / "order")
+	OUTER  = wsp ("OUTER" / "outer")
+	PRIMARY  = wsp ("PRIMARY" / "primary")
+	QUERY  = wsp ("QUERY" / "query")
+	RAISE  = wsp ("RAISE" / "raise")
+	REFERENCES  = wsp ("REFERENCES" / "references")
+	REGEXP  = wsp ("REGEXP" / "regexp")
+	RENAME  = wsp ("RENAME" / "rename")
+	REPLACE  = ws ("REPLACE" / "replace")
+	RETURN  = wsp ("RETURN" / "return")
+	ROW  = wsp ("ROW" / "row")
+	SAVEPOINT  = wsp ("SAVEPOINT" / "savepoint")
+	SELECT  = ws ("SELECT" / "select")
+	SET  = wsp ("SET" / "set")
+	TABLE  = wsp ("TABLE" / "table")
+	TEMP  = wsp ("TEMP" / "temp")
+	TEMPORARY  = wsp ("TEMPORARY" / "temporary")
+	THEN  = wsp ("THEN" / "then")
+	TO  = wsp ("TO" / "to")
+	UNION  = wsp ("UNION" / "union")
+	USING  = wsp ("USING" / "using")
+	VALUES  = wsp ("VALUES" / "values")
+	VIRTUAL  = wsp ("VIRTUAL" / "virtual")
+	WITH  = wsp ("WITH" / "with")
+	WHERE  = wsp ("WHERE" / "where")
     """
 )
 
@@ -241,6 +244,7 @@ class Visitor(NodeVisitor):
     sources = flatten(children, 1, 2)
     return From(sources)
 
+
   def visit_source_table(self, node, children):
     tname = children[0]
     alias = children[1] or tname
@@ -251,6 +255,10 @@ class Visitor(NodeVisitor):
     alias = children[5] 
     return SubQuerySource(subq, alias)
 
+  def visit_source_func(self, node, children):
+    subf = children[0]
+    alias = children[1]
+    return TableFunctionSource(subf, alias)
 
   #
   # Other clauses
@@ -298,13 +306,17 @@ class Visitor(NodeVisitor):
     return "desc"
 
   def visit_limit(self, node, children):
+    # TODO: edit this code to pass OFFSET information to the Limit operator
     return Limit(None, children[2])
 
   def visit_col_ref(self, node, children):
     return Attr(children[1], children[0])
 
   def visit_name(self, node, children):
-    return node.text
+    name = node.text
+    if name[0] == name[-1] == "`":
+      name = name[1:-1]
+    return name
 
   def visit_attr(self, node, children):
     return Attr(node.text)

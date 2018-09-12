@@ -270,6 +270,19 @@ class Scan(Source):
   def to_str(self):
     return "Scan(%s AS %s)" % (self.tablename, self.alias)
 
+class TableFunctionSource(UnaryOp):
+  def __init__(self, function, alias=None):
+    super(TableFunctionSource, self).__init__(function)
+    self.function = function
+    self.alias = alias 
+
+  def __iter__(self):
+    raise Exception("TableFunctionSource: Not implemented")
+
+  def to_str(self):
+    return "TableFunctionSource(%s)" % self.alias
+
+
 
 class Join(BinaryOp):
   pass
@@ -449,12 +462,13 @@ class Filter(UnaryOp):
     return "WHERE(%s)" % str(self.cond)
 
 
-# XXX: Edit this to support offset.  You will need to
+# TODO: Edit this to support offset.  You will need to
 #  1. change the constructor to take the offset as input
 #  2. change the operator execution in __iter__ to support offset
 #  3. change to_str() to also print the offset information
 class Limit(UnaryOp):
 
+  # TODO: Edit this constructor to take as input an offset expression
   def __init__(self, c, limit):
     """
     @c            child operator
@@ -466,6 +480,10 @@ class Limit(UnaryOp):
       self.limit = Literal(self.limit)
 
   def __iter__(self):
+    # TODO: add code to enforce the offset.  Recall that the offset
+    #       is allowed to be an expression!  
+    #       You may assume that the expression will never reference an 
+    #       attribute, and will always evaluate to a number
     _limit = int(self.limit(None))
     for i, row in enumerate(self.c):
       if i >= _limit:
@@ -473,6 +491,9 @@ class Limit(UnaryOp):
       yield row
 
   def to_str(self):
+    # TODO: This should also print the offset.
+    #       There's no specific format that you need to adhere to,
+    #       But we will check that it prints the offset expression
     return "LIMIT(%s)" % self.limit
 
 class Distinct(UnaryOp):
@@ -572,7 +593,9 @@ def binary(op, l, r):
   if op == "*": return l * r
   if op == "-": return l - r
   if op == "=": return l == r
+  if op == "==": return l == r
   if op == "<>": return l != r
+  if op == "!=": return l != r
   if op == "and": return l and r
   if op == "or": return l or r
   if op == "<": return l < r
