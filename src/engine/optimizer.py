@@ -131,7 +131,7 @@ class SelingerOpt(object):
     # plan = self.best_plan(sources)
 
 
-    print "# plans tested: ", self.plans_tested
+    # print "# plans tested: ", self.plans_tested
     return plan
 
 
