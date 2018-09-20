@@ -39,7 +39,7 @@ def main(u1, u2, a, q):
       return
 
   # Package and check the code
-  subprocess.check_call( ["./filecheck.sh", uni1, assignment], shell=False)
+  subprocess.check_call( ["./filecheck.sh", uni1, uni2, assignment], shell=False)
 
 if __name__ == "__main__":
   main()
