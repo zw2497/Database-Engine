@@ -93,3 +93,18 @@ You can execute a simple query, and it will print the query plan and then the re
 	{'a': 1, 'c': 6, 'b': 5, 'd': 7}
 
 
+###Submission Instructions
+
+Run the submission script to package and zip your file. Submit this to Canvas. 
+
+
+####Windows users:
+
+The submission bash script won't work for you unless you do an ubuntu installation.
+Copy your entire databass system into a new folder and name it uni_offset.
+
+Run test_offset.py inside this new databass copy to make sure it all still works and that you've gotten all the right files. 
+Zip the file and submit it to Canvas. 
+
+####Everyone:
+Both partners should submit on their Canvas accounts, and you should put your partner's name and UNI in the comments on your Canvas submission.
