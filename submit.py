@@ -1,5 +1,6 @@
 import click
 import subprocess
+import shutil
 
 assignments = ['aa%s' % i for i in range(1,6)]
 digits = "1234567890"
@@ -34,12 +35,14 @@ def main(u1, u2, a, q):
     return
 
   if not q:
-    cmd = input("You submitted %s, %s, and %s.  Type Y to submit: " % (uni1, uni2, assignment))
+    cmd = raw_input("You submitted %s, %s, and %s.  Type Y to submit: " % (uni1, uni2, assignment))
     if cmd.lower() != "y":
       return
 
   # Package and check the code
-  subprocess.check_call( ["./filecheck.sh", uni1, uni2, assignment], shell=False)
+  fname = "%s_%s_%s" % (assignment, uni1, uni2)
+  shutil.make_archive(fname, 'zip', "src", ".")
+
 
 if __name__ == "__main__":
   main()
