@@ -478,6 +478,10 @@ class Limit(UnaryOp):
     self.limit = limit
     if isinstance(self.limit, int):
       self.limit = Literal(self.limit)
+  
+    l =  int(self.limit(None))
+    if l < 0:
+      raise Exception("LIMIT must not be negative: %d" % l)
 
   def __iter__(self):
     # TODO: add code to enforce the offset.  Recall that the offset
