@@ -294,7 +294,10 @@ class SelingerOpt(object):
       # Take a look at db.py:Stats, which provides some database statistics.
       # To use its functionality, you may need to implement parts of db.py
       cost = 0
-    else:
+    elif join.is_type(SubQuerySource):
+      print("WARN: Using naive cardinality for SubQuerySource")
+      cost = 1
+    elif join.is_type(Join):
       # XXX: Compute the cost of the tuple-based nested loops join operation
       # in terms of the cost to compute the outer (left) subplan and the number
       # of tuples we need to examine from the inner (right) table.
@@ -304,6 +307,9 @@ class SelingerOpt(object):
 
       # We penalize high cardinality joins a little bit
       cost += 0.1 * self.card(join)
+    else:
+      raise Exception("Optimizer doesn't support cost estimation for subplan class: %s" % str(join.__class__))
+
 
     # save estimate in the cache
     self.costs[join] = cost
@@ -324,10 +330,15 @@ class SelingerOpt(object):
       # XXX: Compute the cardinality of the join if it is a Scan operator
       # Similar to self.cost() above, take a look at db.py:Stats.
       card = 1
-    else:
+    elif join.is_type(SubQuerySource):
+      print("WARN: Using naive cardinality for SubQuerySource")
+      card = 1
+    elif join.is_type(Join):
       # XXX: Compute the cardinality of the join subplan as described in lecture.
       # Hint: You may want to compute the cardinality recursively
       card = 1
+    else:
+      raise Exception("Optimizer doesn't support cardinality estimation for subplan class: %s" % str(join.__class__))
 
     # Save estimate in the cache
     self.cards[join] = card

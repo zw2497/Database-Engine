@@ -71,6 +71,18 @@ if __name__ == "__main__":
     elif cmd.upper().startswith("TRACE"):
       traceback.print_exc()
 
+    elif cmd.upper().startswith("PARSE EXPR"):
+      q = cmd[len("PARSE EXPR"):]
+      ast = None
+      try:
+        ast = _parse_expr(q)
+      except Exception as err:
+        print("ERROR:", err)
+
+      if ast: 
+        print(ast)
+
+
     elif cmd.upper().startswith("PARSE"):
       q = cmd[len("PARSE"):]
       ast = None

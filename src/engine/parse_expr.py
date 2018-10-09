@@ -12,10 +12,11 @@ grammar = Grammar(
     exprstmt = ws expr ws
     expr     = biexpr / unexpr / value
     biexpr   = value ws binaryop ws expr
-    unexpr   = unaryop expr
+    unexpr   = unaryop ws expr
     value    = parenval / 
                number /
                boolean /
+               NULL / 
                function /
                col_ref /
                string /
@@ -25,17 +26,20 @@ grammar = Grammar(
     arg_list = expr (ws "," ws expr)*
     number   = ~"\d*\.?\d+"i
     string   = ~"\'\w*\'"i
-    col_ref  = (name ".")? name
+    col_ref  = (name "." (name ".")? )? name
     attr     = ~"\w[\w\d]*"i
     name     = ~"[a-zA-Z]\w*"i
     fname    = ~"\w[\w\d]*"i
     boolean  = "true" / "false"
     compound_op = "UNION" / "union"
     binaryop = "+" / "-" / "*" / "/" / "=" / "<>" /
-               "<=" / ">" / "<" / ">" / "and" / "or"
-    unaryop  = "+" / "-" / "not"
+               "<=" / ">" / "<" / ">" / 
+               "and" / "AND" / "or" / "OR" / 
+               "is" / "IS"
+    unaryop  = "+" / "-" / "not" / "NOT"
     ws       = ~"\s*"i
     wsp      = ~"\s+"i
+    NULL     = "null" / "NULL"
     """)
 
 def flatten(children, sidx, lidx):
@@ -69,19 +73,33 @@ class Visitor(NodeVisitor):
     return node.text
 
   def visit_col_ref(self, node, children):
-    return Attr(children[1], children[0])
+    attrname = children[-1]
+    dbtable = children[0]
+    db = table = None
+    if dbtable and isinstance(dbtable, list):
+      db, table = tuple(dbtable)
+    elif isinstance(dbtable, str):
+      table = dbtable
+    return Attr(attrname, table, db)
 
   def visit_attr(self, node, children):
     return Attr(node.text)
+
+  def visit_NULL(self, node, children):
+    return "null"
 
   def visit_binaryop(self, node, children):
     return node.text
 
   def visit_biexpr(self, node, children):
-    return Expr(children[2], children[0], children[-1])
+    children = filter(bool, children)
+    return Expr(children[1], children[0], children[-1])
+
+  def visit_unaryop(self, node, children):
+    return node.text.strip()
 
   def visit_unexpr(self, node, children):
-    return Expr(children[0], children[1])
+    return Expr(children[0], children[-1])
 
   def visit_btwnexpr(self, node, children):
     v1, v2, v3 = children[0], children[3], children[-1]

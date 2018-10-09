@@ -280,7 +280,7 @@ class TableFunctionSource(UnaryOp):
     raise Exception("TableFunctionSource: Not implemented")
 
   def to_str(self):
-    return "TableFunctionSource(%s)" % self.alias
+    return "TableFunctionSource(%s, %s)" % (self.function, self.alias)
 
 
 
@@ -516,7 +516,7 @@ class Distinct(UnaryOp):
     return "DISTINCT()"
 
 class Project(UnaryOp):
-  def __init__(self, c, exprs, aliases=[]):
+  def __init__(self, c, exprs, aliases=[], top=None):
     """
     @p            parent operator
     @exprs        list of function that take the tuple as input and
@@ -527,6 +527,7 @@ class Project(UnaryOp):
     self.exprs = list(map(cond_to_func, exprs))
     self.aliases = list(aliases) or []
     self.set_default_aliases()
+    self.top = top
 
   def set_default_aliases(self):
     for i, expr in enumerate(self.exprs):
@@ -560,6 +561,8 @@ class Project(UnaryOp):
 
   def to_str(self):
     args = ", ".join(["%s AS %s" % (e, a) for (e, a) in  zip(self.exprs, self.aliases)])
+    if self.top:
+      return "Project(TOP %s %s)" % (self.top, args)
     return "Project(%s)" % args
 
 
@@ -744,9 +747,14 @@ class Bool(ExprBase):
     return str(self.v)
 
 class Attr(ExprBase):
-  def __init__(self, attr, tablename=None):
+  def __init__(self, attr, tablename=None, dbname=None):
     self.attr = attr
     self.tablename = tablename
+    self.dbname = dbname
+    if self.tablename:
+      print("WARNING: can't deal with * for specific tables: %s" % self.tablename)
+    if self.dbname:
+      print("WARNING: can't deal with * for specific databases: %s" % self.dbname)
 
   def __call__(self, tup, tup2=None):
     if self.attr in tup:
@@ -756,19 +764,21 @@ class Attr(ExprBase):
     raise Exception("couldn't find %s in either tuple" % self.attr)
 
   def to_str(self):
-    if self.tablename:
-      return "%s.%s" % (self.tablename, self.attr)
-    return self.attr
+    vals = [self.dbname, self.tablename, self.attr]
+    return ".".join(filter(bool, vals))
 
   def to_python(self):
     return """%s["%s"]""" % (self.tablename, self.attr)
 
 
 class Star(ExprBase):
-  def __init__(self, tablename=None):
+  def __init__(self, tablename=None, dbname=None):
     self.tablename = tablename
+    self.dbname = dbname
     if self.tablename:
       print("WARNING: can't deal with * for specific tables: %s" % self.tablename)
+    if self.dbname:
+      print("WARNING: can't deal with * for specific databases: %s" % self.dbname)
 
   def __call__(self, tup, tup2=None):
     return tup
