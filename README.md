@@ -2,12 +2,10 @@
 
 This isn't your average database. This will be the base of operations for exanding your data processing knowledge!  The base of your data exploration in this class!  It will cover the bassics of query execution that you will learn in class!
 
-We present to you....
-
-    The DATABASS..Bass...bass
+We present to you....  the **DATABASS..Bass...bass**
 
 
-## Getting STarted
+## Getting Started
 
 This is a simple Python-based analytical database for instructional purposes.  See the [system design](./docs/design.md) for details.
 
