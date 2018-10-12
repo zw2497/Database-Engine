@@ -1,5 +1,14 @@
 # DataBass: Wait for the Table to DROOOOOOOP
 
+This isn't your average database. This will be the base of operations for exanding your data processing knowledge!  The base of your data exploration in this class!  It will cover the bassics of query execution that you will learn in class!
+
+We present to you....
+
+    The DATABASS..Bass...bass
+
+
+## Getting STarted
+
 This is a simple Python-based analytical database for instructional purposes.  See the [system design](./docs/design.md) for details.
 
 Installation
@@ -93,8 +102,3 @@ You can execute a simple query, and it will print the query plan and then the re
 	{'a': 1, 'c': 6, 'b': 5, 'd': 7}
 
 
-### Submission Instructions
-
-Run the submission script to package and zip your file.  It will ask you to submit you and your partners' UNIs and specify the assignment. It will create a zip file in the current directory.  Submit the generated ZIP file to Canvas. 
-
-Both partners should submit on their Canvas accounts.
