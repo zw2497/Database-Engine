@@ -1,8 +1,11 @@
-# DataBass: Wait for the Table to DROOOOOOOP
+<img src="./docs/databass-small.png" width="600"></img>
+
+
+# DataBass: Not Quite a DataBase
 
 This isn't your average database. This will be the base of operations for exanding your data processing knowledge!  The base of your data exploration in this class!  It will cover the bassics of query execution that you will learn in class!
 
-We present to you....  the **DATABASS..Bass...bass**
+We present to you....  the **DATABASS..Bass...bass**.  
 
 
 ## Getting Started
