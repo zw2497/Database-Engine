@@ -45,8 +45,6 @@ class Expr(object):
       op = "=="
     elif self.op == "<":
       op = "<"
-    else:
-      op = self.op
     return "(%s) %s (%s)" % (self.l.compile(), op, self.r.compile())
 
 class Const(Expr):
