@@ -21,7 +21,7 @@ class TestUnits(unittest.TestCase):
         assert eval(expr) == False
         
         # >= test
-        exp2 = Expr("<=", Const(10), Const(2))
+        exp2 = Expr(">=", Const(10), Const(2))
         # Interpreted evaluation
         assert exp2(None) == True
         # Compiled evaluation
