@@ -62,7 +62,7 @@ class TestUnits(unittest.TestCase):
  
         print_scan_op = Print(Scan("data", db))
  
-        code = scan_op.compile_to_code()
+        code = print_scan_op.compile_to_code()
         print "\n\nPrint/scan test is"
         print code
 
