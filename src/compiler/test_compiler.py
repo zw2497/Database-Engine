@@ -60,7 +60,7 @@ class TestUnits(unittest.TestCase):
         db = Database()
        	db.register_table("data", data)
  
-        scan_op = Scan("data", db) 
+        print_scan_op = Print(Scan("data", db))
  
         code = scan_op.compile_to_code()
         print "\n\nPrint/scan test is"
