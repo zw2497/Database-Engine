@@ -15,6 +15,9 @@ This is a simple Python-based analytical database for instructional purposes.  S
 Installation
 
     git clone git@github.com:w4111/databass-public.git
+    
+    #If you get an error like 'Fatal' or 'Access denied' try instead doing:
+    #git clone https://github.com/w4111/databass-public.git
 
     # turn on virtualenv
 
