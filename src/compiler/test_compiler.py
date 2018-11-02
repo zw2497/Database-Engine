@@ -156,7 +156,7 @@ class TestUnits(unittest.TestCase):
         add_expr = Expr("+", Expr("-", Expr("+", Const(9), Const(1)), Const(1)), Const(4)) #WHERE a <= 9+1-1
         pred_expr = Expr("<=", Var("a"), add_expr) 
         filter_op = Filter(Scan("data", db), [pred_expr]) #SELECT 
-        q = Yield(filter_op)
+        q = Yield(Count(filter_op))
 
         code = q.compile_to_code()
         print "\n\nCount demo function is"
