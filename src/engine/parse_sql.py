@@ -19,52 +19,47 @@ from parsimonious.nodes import NodeVisitor
 grammar = Grammar(
     r"""
     query    = ws select_cores orderby? limit? ws
-    select_cores   = select_core (wsp compound_op wsp select_core)*
+    select_cores   = select_core (compound_op select_core)*
     select_core    = SELECT wsp select_results from_clause? where_clause? gb_clause?
-    select_results = (top_clause wsp)? select_result (ws "," ws select_result)*
-    # sel_res_all_star / sel_res_tab_star / 
-    select_result  = sel_res_val / sel_res_col 
+    select_results = select_result (ws "," ws select_result)*
+    select_result  = sel_res_all_star / sel_res_tab_star / sel_res_val / sel_res_col 
     sel_res_tab_star = name ".*"
     sel_res_all_star = "*"
     sel_res_val    = expr (AS wsp name)?
     sel_res_col    = col_ref (AS wsp name)
 
-    top_clause     = TOP wsp expr
-    from_clause    = wsp FROM join_source
+    from_clause    = FROM join_source
     join_source    = ws single_source (ws "," ws single_source)*
     single_source  = source_func / source_table / source_subq 
-    source_table   = table_name (AS? wsp name)?
+    source_table   = table_name (AS wsp name)?
     source_subq    = "(" ws query ws ")" (AS wsp name)?
-    source_func    = function (AS? wsp name)?
+    source_func    = function (AS wsp name)?
 
-    where_clause   = wsp WHERE wsp expr (AND wsp expr)*
+    where_clause   = WHERE wsp expr (AND wsp expr)*
 
-    gb_clause      = wsp GROUP wsp BY group_clause having_clause?
+    gb_clause      = GROUP BY group_clause having_clause?
     group_clause   = grouping_term (ws "," grouping_term)*
     grouping_term  = ws expr
-    having_clause  = wsp HAVING expr
+    having_clause  = HAVING expr
 
-    orderby        = wsp ORDER wsp BY ordering_term (ws "," ordering_term)*
-    ordering_term  = ws expr (wsp ascdesc)?
-    ascdesc        = ASC / DESC
+    orderby        = ORDER BY ordering_term (ws "," ordering_term)*
+    ordering_term  = ws expr (ASC/DESC)?
 
     # TODO: edit this grammar rule to support the OFFSET syntax
     #       Note that the offset is allowed to be an expression.
-    limit          = wsp LIMIT wsp expr
+    limit          = LIMIT wsp expr (OFFSET wsp expr)?
 
-    col_ref        = (name dots (name dots)?)? column_name
-    dots           = ~"\.+"i
+    col_ref        = (table_name ".")? column_name
 
 
 
     expr     = btwnexpr / biexpr / unexpr / value
     btwnexpr = value BETWEEN wsp value AND wsp value
-    biexpr   = value ws binaryop ws expr
-    unexpr   = unaryop ws expr
+    biexpr   = value ws binaryop_no_andor ws expr
+    unexpr   = unaryop expr
     value    = parenval / 
                number /
                boolean /
-               NULL / 
                function /
                col_ref /
                string /
@@ -75,44 +70,32 @@ grammar = Grammar(
     number   = ~"\d*\.?\d+"i
     string   = ~"([\"\'])(\\\\?.)*?\\1"i
     attr     = ~"\w[\w\d]*"i
-    fname    = ~"\w[\w\d\.]*"i
+    fname    = ~"\w[\w\d]*"i
     boolean  = "true" / "false"
     compound_op = "UNION" / "union"
     binaryop = "+" / "-" / "*" / "/" / "==" / "=" / "<>" / "!=" / 
-               "<=" / ">" / "<" / ">" / 
-               "and " / "AND " / "or " / "OR " / 
-               "like " / "LIKE " / IS
+               "<=" / ">" / "<" / ">" / "and" / "AND" / "or" / "OR" / "like" / "LIKE"
     binaryop_no_andor = "+" / "-" / "*" / "/" / "==" / "=" / "<>" / "!=" / 
-               "<=" / ">" / "<" / ">" / "like" / "LIKE" / IS
+               "<=" / ">" / "<" / ">" / "like" / "LIKE"
     unaryop  = "+" / "-" / "not" / "NOT"
     ws       = ~"\s*"i
     wsp      = ~"\s+"i
 
-    name             = !WHERE !SELECT !FROM !LIMIT !HAVING !GROUP name_recursive
-    name_recursive   = name_regex ("." name_regex?)*
-    name_regex       = ~"[a-zA-Z]\w*"i /  
-                       ~"`[a-zA-Z][\w\.\-\_\:\*]*`"i /
-                       ~"\[[a-zA-Z][\w\.\-\_\:\*]*\]"i 
-    database_name = name
+    name       = ~"[a-zA-Z]\w*"i /  ~"`[a-zA-Z][\w\.\-\_\:\*]*`"i / ~"\[[a-zA-Z][\w\.\-\_\:\*]*\]"i 
     table_name = name
-    column_name = name  / STAR
-
-
-    #
-    # These rules define the primary SQL keywords
-    #
+    column_name = name
 
     ADD = wsp ("ADD" / "and")
     ALL = wsp ("ALL" / "all")
     ALTER = wsp ("ALTER" / "alter")
     AND = wsp ("AND" / "and")
     AS = wsp ("AS" / "as")
-    ASC = ("ASC" / "asc")
+    ASC = wsp ("ASC" / "asc")
     BETWEEN = wsp ("BETWEEN" / "between")
-    BY = ("BY" / "by")
+    BY = wsp ("BY" / "by")
     CAST = wsp ("CAST" / "cast")
     COLUMN = wsp ("COLUMN" / "column")
-    DESC = ("DESC" / "desc")
+    DESC = wsp ("DESC" / "distinct")
     DISTINCT = wsp ("DISTINCT" / "distinct")
     E = "E"
 	ESCAPE  = wsp ("ESCAPE" / "escape")
@@ -121,32 +104,32 @@ grammar = Grammar(
 	EXPLAIN  = ws ("EXPLAIN" / "explain")
 	EVENT  = ws ("EVENT" / "event")
 	FORALL  = wsp ("FORALL" / "forall")
-	FROM  = ("FROM" / "from")
+	FROM  = wsp ("FROM" / "from")
 	GLOB  = wsp ("GLOB" / "glob")
-	GROUP  = ("GROUP" / "group")
-	HAVING  = ("HAVING" / "having")
+	GROUP  = wsp ("GROUP" / "group")
+	HAVING  = wsp ("HAVING" / "having")
 	IN  = wsp ("IN" / "in")
 	INNER  = wsp ("INNER" / "inner")
 	INSERT  = ws ("INSERT" / "insert")
 	INTERSECT  = wsp ("INTERSECT" / "intersect")
 	INTO  = wsp ("INTO" / "into")
-	IS  = "IS" / "is"
+	IS  = wsp ("IS" / "is")
 	ISNULL  = wsp ("ISNULL" / "isnull")
 	JOIN  = wsp ("JOIN" / "join")
 	KEY  = wsp ("KEY" / "key")
 	LEFT  = wsp ("LEFT" / "left")
 	LIKE  = wsp ("LIKE" / "like")
-	LIMIT  = ("LIMIT" / "limit")
+	LIMIT  = wsp ("LIMIT" / "limit")
 	MATCH  = wsp ("MATCH" / "match")
 	NO  = wsp ("NO" / "no")
 	NOT  = wsp ("NOT" / "not")
 	NOTNULL  = wsp ("NOTNULL" / "notnull")
 	NULL  = wsp ("NULL" / "null")
 	OF  = wsp ("OF" / "of")
-	OFFSET  = ("OFFSET" / "offset")
+	OFFSET  = wsp ("OFFSET" / "offset")
 	ON  = wsp ("ON" / "on")
 	OR  = wsp ("OR" / "or")
-	ORDER  = ("ORDER" / "order")
+	ORDER  = wsp ("ORDER" / "order")
 	OUTER  = wsp ("OUTER" / "outer")
 	PRIMARY  = wsp ("PRIMARY" / "primary")
 	QUERY  = wsp ("QUERY" / "query")
@@ -158,7 +141,6 @@ grammar = Grammar(
 	RETURN  = wsp ("RETURN" / "return")
 	ROW  = wsp ("ROW" / "row")
 	SAVEPOINT  = wsp ("SAVEPOINT" / "savepoint")
-    STAR = "*"
 	SELECT  = ws ("SELECT" / "select")
 	SET  = wsp ("SET" / "set")
 	TABLE  = wsp ("TABLE" / "table")
@@ -166,19 +148,18 @@ grammar = Grammar(
 	TEMPORARY  = wsp ("TEMPORARY" / "temporary")
 	THEN  = wsp ("THEN" / "then")
 	TO  = wsp ("TO" / "to")
-	TOP = ("TOP" / "top")
 	UNION  = wsp ("UNION" / "union")
 	USING  = wsp ("USING" / "using")
 	VALUES  = wsp ("VALUES" / "values")
 	VIRTUAL  = wsp ("VIRTUAL" / "virtual")
 	WITH  = wsp ("WITH" / "with")
-	WHERE  = ("WHERE" / "where")
+	WHERE  = wsp ("WHERE" / "where")
     """
 )
 
 def flatten(children, sidx, lidx):
   """
-  Helper function used in Visitor to flatten and filter 
+  Helper function used in Visitor to flatten and filter
   lists of lists
   """
   ret = [children[sidx]]
@@ -193,12 +174,12 @@ class Visitor(NodeVisitor):
   Each expression in the grammar above of the form
 
       XXX = ....
-  
-  can be handled with a custom function by writing 
-  
+
+  can be handled with a custom function by writing
+
       def visit_XXX(self, node, children):
 
-  You can assume the elements in children are the handled 
+  You can assume the elements in children are the handled
   versions of the corresponding child nodes
   """
   grammar = grammar
@@ -227,7 +208,7 @@ class Visitor(NodeVisitor):
     nodes = filter(bool, [fromc, wherec, gbc, selectc])
     ret = None
     for n in nodes:
-      if not ret: 
+      if not ret:
         ret = n
       else:
         n.c = ret
@@ -235,10 +216,9 @@ class Visitor(NodeVisitor):
     return ret
 
   def visit_select_results(self, node, children):
-    top = children[0]
-    allexprs = flatten(children, 1, 2)
+    allexprs = flatten(children, 0, 1)
     exprs, aliases = zip(*allexprs)
-    return Project(None, exprs, aliases=aliases, top=top)
+    return Project(None, exprs, aliases)
 
   def visit_sel_res_tab_star(self, node, children):
     return (Star(children[0]), None)
@@ -252,16 +232,13 @@ class Visitor(NodeVisitor):
   def visit_sel_res_col(self, node, children):
     return (children[0], children[1] or None)
 
-  def visit_top_clause(self, node, children):
-    return children[-1]
-
 
   #
   # FROM CLAUSE
   #
 
   def visit_from_clause(self, node, children):
-    return children[-1]
+    return children[1]
 
   def visit_join_source(self, node, children):
     sources = flatten(children, 1, 2)
@@ -275,33 +252,28 @@ class Visitor(NodeVisitor):
 
   def visit_source_subq(self, node, children):
     subq = children[2]
-    alias = children[5] 
+    alias = children[5]
     return SubQuerySource(subq, alias)
 
   def visit_source_func(self, node, children):
     subf = children[0]
     alias = children[1]
-    if not alias:
-      alias = None
     return TableFunctionSource(subf, alias)
 
   #
   # Other clauses
   #
 
-
-
-
   def visit_where_clause(self, node, children):
-    exprs = flatten(children, -2, -1)
+    exprs = flatten(children, 2, -1)
     ret = exprs[0]
     for e in exprs[1:]:
       ret = Expr("and", e, ret)
     return Filter(None, ret)
 
   def visit_gb_clause(self, node, children):
-    gb = children[-2] 
-    having = children[-1]
+    gb = children[2]
+    having = children[3]
     if having:
       having.c = gb
       return having
@@ -315,22 +287,17 @@ class Visitor(NodeVisitor):
     return children[1]
 
   def visit_having_clause(self, node, children):
-    return children[-11]
+    return children[1]
 
   def visit_orderby(self, node, children):
-    terms = flatten(children, -2, -1)
+    terms = flatten(children, 2, 3)
     exprs, ascdesc = zip(*terms)
     return OrderBy(None, exprs, ascdesc)
 
   def visit_ordering_term(self, node, children):
     expr = children[1]
     order = children[2]
-    if not order:
-      order = None
     return (expr, order)
-
-  def visit_ascdesc(self, node, children):
-    return children[0]
 
   def visit_ASC(self, node, children):
     return "asc"
@@ -340,32 +307,14 @@ class Visitor(NodeVisitor):
 
   def visit_limit(self, node, children):
     # TODO: edit this code to pass OFFSET information to the Limit operator
-    return Limit(None, children[-1])
+    return Limit(None, children[2], children[3])
 
-  def visit_STAR(self, node, children):
-    return "*"
 
 
   def visit_col_ref(self, node, children):
-    attrname = children[-1]
-    dbtable = children[0]
-    db = table = None
-    if dbtable and isinstance(dbtable, list):
-      db, table = tuple(dbtable)
-    elif isinstance(dbtable, str):
-      table = dbtable
-    if attrname == "*":
-      return Star(table, db)
-    return Attr(attrname, table, db)
+    return Attr(children[1], children[0])
 
   def visit_name(self, node, children):
-    return children[-1]
-
-  def visit_name_recursive(self, node, children):
-    children = flatten(children, 0, 1)
-    return ".".join(children)
-
-  def visit_name_regex(self, node, children):
     name = node.text
     if name[0] == name[-1] == "`":
       name = name[1:-1]
@@ -384,11 +333,10 @@ class Visitor(NodeVisitor):
     return node.text
 
   def visit_biexpr(self, node, children):
-    children = filter(bool, children)
-    return Expr(children[1], children[0], children[-1])
+    return Expr(children[2], children[0], children[-1])
 
   def visit_unexpr(self, node, children):
-    return Expr(children[0], children[-1])
+    return Expr(children[0], children[1])
 
   def visit_btwnexpr(self, node, children):
     v1, v2, v3 = children[0], children[3], children[-1]
