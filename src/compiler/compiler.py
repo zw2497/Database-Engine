@@ -77,10 +77,13 @@ class Op(object):
     if hasattr(self, "c"):
       # XXX: implement this 
       # the operator has a child, so need to maintain the stack and continue the producer phase
+      ctx.stack.append(self)
+      self.c.produce(ctx)
       pass
     else:
       # XXX: implement this 
       # the operator doesn't have a child, so done with the producer phase and should start consumer phase
+      self.consume(ctx)
       pass
 
   def consume(self, ctx):
@@ -130,6 +133,10 @@ class Scan(Op):
     The compiled code assumes that "db" is within scope can can be referenced
     """
     # XXX: implement this method
+    str = "for row in db['{}']:".format(self.tablename)
+    ctx.code.add_line(str)
+    ctx.code.indent_next()
+    ctx.consume_next()
     return
 
 class Join(Op):
@@ -190,6 +197,11 @@ class Filter(Op):
     Addes code to ctx.code that applies the filter
     """
     # XXX: implement this method
+    str = "if {}:".format(self.exprs[0].compile())
+    ctx.code.add_line(str)
+    ctx.code.indent_next()
+    ctx.consume_next()
+    return
 
                 
 class Project(Op):
@@ -235,6 +247,14 @@ class Project(Op):
     Adds code to the ctx.code object that sets the "row" variable to the result of applying the projection operation.
     """
     # XXX: Implement this method
+    str = "res = dict()"
+    ctx.code.add_line(str)
+    for exp, alias in zip(self.exprs, self.aliases):
+      str = "res['{}'] = {}".format(alias, exp.compile())
+      ctx.code.add_line(str)
+    str = "row = res"
+    ctx.code.add_line(str)
+    ctx.consume_next()
     return
 
 
@@ -274,6 +294,7 @@ class Print(Op):
     this method will generate printing code and add the code to the Code object in the context
     """
     # XXX: Implement this method
+    ctx.code.add_line("print row")
     return
 
 class Count(Op):
@@ -298,6 +319,10 @@ class Count(Op):
     """
     # XXX: Implement this method so that it initializes a counter BEFORE the for loops
     #      put generates the row that represents the aggregation result AFTER the for loops
+    str = "n = 0"
+    ctx.code.add_line(str)
+    ctx.stack.append(self)
+    self.c.produce(ctx)
     
   def consume(self, ctx):
     """
@@ -306,6 +331,11 @@ class Count(Op):
     Generates code to update the counter
     """
     # XXX: Implement this method
+    str = "n += 1"
+    ctx.code.add_line(str)
+    str = "row = dict(count = n)"
+    ctx.code.lines.append([0, str])
+    ctx.consume_next()
     return
 
 

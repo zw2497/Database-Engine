@@ -15,14 +15,20 @@ except:
 
 class Stats(object):
   
-  # XXX: Edit this to compute the table cardinality
+
   def __init__(self, table):
     self.table = table
-    self.card = 10
+    self.card = len(table.rows)
 
-  # XXX: edit this to return the domain of the field
+
   def __getitem__(self, field):
-    return [0, 1]
+    tmp = set()
+    for f in self.table:
+      tmp.add(f[field])
+    if self.table.type(field) == "num":
+      return dict(min=min(tmp), max=max(tmp), ndistinct=len(tmp))
+    else:
+      return dict(min=None, max=None, ndistinct=len(tmp))
 
 
 class Table(object):

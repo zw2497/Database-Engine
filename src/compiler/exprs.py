@@ -35,6 +35,14 @@ class Expr(object):
       return self.l(row) > self.r(row)
     if self.op == "+":
       return self.l(row) + self.r(row)
+    if self.op == "-":
+      return self.l(row) - self.r(row)
+    if self.op == ">=":
+      return self.l(row) >= self.r(row)
+    if self.op == "<=":
+      return self.l(row) <= self.r(row)
+    if self.op == "!=":
+      return self.l(row) != self.r(row)
 
   def compile(self):
     """
@@ -43,8 +51,10 @@ class Expr(object):
     op = None
     if self.op == "=":
       op = "=="
-    elif self.op == "<":
-      op = "<"
+    elif self.op == "<>":
+      op = "!="
+    else:
+      op = self.op
     return "(%s) %s (%s)" % (self.l.compile(), op, self.r.compile())
 
 class Const(Expr):
